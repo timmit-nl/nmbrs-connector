@@ -1,5 +1,5 @@
 {
-  "name": "mijnkantoor/nmbrs",
+  "name": "rockit-works/nmbrs",
   "description": "SDK to consume NMBRS API in PHP",
   "type": "library",
   "license": "MIT",
