@@ -106,4 +106,70 @@ trait EmployeeCallsTrait
         }
     }
 
+    /**
+     * Get current active department by EmployeeID
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Department_GetCurrent
+     * @param $employee_id
+     * @return array
+     * @throws NmbrsException
+     */
+    public function getCurrentDepartmentByEmployee($employee_id){
+        try {
+            $response = $this->employeeClient->Department_GetCurrent(['EmployeeId' => $employee_id]);
+            return $this->wrapArray($response->Department_GetCurrentResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get current active personal info by EmployeeID
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=PersonalInfo_GetCurrent
+     * @param $employee_id
+     * @return array
+     * @throws NmbrsException
+     */
+    public function getCurrentPersonalInfoByEmployee($employee_id){
+        try {
+            $response = $this->employeeClient->PersonalInfo_GetCurrent(['EmployeeId' => $employee_id]);
+            return $this->wrapArray($response->PersonalInfo_GetCurrentResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get active contracts for current period by EmployeeID
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Contract_GetCurrentPeriod 
+     * @todo determine if this is the correct method. (could also be Contract_GetAll.)
+     * @param $employee_id
+     * @return array
+     * @throws NmbrsException
+     */
+    public function getCurrentContractByEmployee($employee_id){
+        try {
+            $response = $this->employeeClient->Contract_GetCurrentPeriod(['EmployeeId' => $employee_id]);
+            return $this->wrapArray($response->EmployeeContractItem->EmployeeContracts);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get current labour agreement settings for current period by EmployeeID
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=LabourAgreements_GetCurrent 
+     * @todo determine if this is the correct method. (could also be LabourAgreements_Get.)
+     * @param $employee_id
+     * @return array
+     * @throws NmbrsException
+     */
+    public function getCurrentLabourAgreementsByEmployee($employee_id){
+        try {
+            $response = $this->employeeClient->LabourAgreements_GetCurrent(['EmployeeId' => $employee_id]);
+            return $this->wrapArray($response->LabourAgreements_GetCurrentResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+    
 }
