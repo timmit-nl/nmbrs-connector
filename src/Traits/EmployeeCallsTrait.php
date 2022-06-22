@@ -8,6 +8,13 @@ use Mijnkantoor\NMBRS\Exceptions\NmbrsException;
 
 trait EmployeeCallsTrait
 {
+    /*
+    |--------------------------------------------------------------------------
+    | GETTERS
+    |--------------------------------------------------------------------------
+    |
+    */
+
     /**
      * Get functions for each employee in a given company
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Function_GetAll_AllEmployeesByCompany_V2
@@ -84,6 +91,11 @@ trait EmployeeCallsTrait
     public function getAllPersonalInfoContractSalaryAddressEmployeesByCompany($company_id){
         try {
             $response = $this->employeeClient->PersonalInfoContractSalaryAddress_GetAll_AllEmployeesByCompany(['CompanyID' => $company_id]);
+
+            if (count($response->PersonalInfoContractSalaryAddress_GetAll_AllEmployeesByCompanyResult->PersonalInfoContractSalaryAddress) > 1) {
+                return $response->PersonalInfoContractSalaryAddress_GetAll_AllEmployeesByCompanyResult->PersonalInfoContractSalaryAddress;
+            }
+
             return $this->wrapArray($response->PersonalInfoContractSalaryAddress_GetAll_AllEmployeesByCompanyResult);
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
@@ -155,6 +167,7 @@ trait EmployeeCallsTrait
         }
     }
 
+
     /**
      * Get current labour agreement settings for current period by EmployeeID
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=LabourAgreements_GetCurrent 
@@ -171,5 +184,102 @@ trait EmployeeCallsTrait
             throw new NmbrsException($e->getMessage());
         }
     }
-    
+
+    /*
+    |--------------------------------------------------------------------------
+    | SETTERS
+    |--------------------------------------------------------------------------
+    |
+    */
+
+    /**
+     * NL-only. Insert a absence with cause, this item will start from the given date in the object.
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence2_Insert 
+     * @todo determine if this is the correct method. (could also be Absence_insert.)
+     * @param $employee_id
+     * @return array
+     * @throws NmbrsException
+     */
+    public function setAbsenceByMedicalFile($medicalFile){
+        try {
+            $response = $this->employeeClient->Absence2_Insert([
+                'EmployeeId' => $medicalFile->employee->payroll_id,
+                'NewDossier' => $medicalFile->tasks()->where('type', 'open_medicalFile')->first() ? false : true,
+                'Absence' => [
+                    'AbsenceId' => '',
+                    // 'AbsenceId' => $medicalFile->payroll_id ?? null,
+                    'Percentage' => $medicalFile->sick_percentage,
+                    'Comment' => $medicalFile->particularities ?? null,
+                    'Dossiernr' => $medicalFile->uuid,
+                    'Dossier' => $medicalFile->type, //$medicalFile->started_at,
+                    'Start' => displayDateTimeXsd($medicalFile->started_at), // '2022-06-21T10:20:44.000000Z',
+                    'End' => isset($medicalFile->closed_at) ? displayDateTimeXsd($medicalFile->closed_at) :  null,
+                    'RegistrationStartDate' => displayDateTimeXsd($medicalFile->date_of_execution), // '2022-06-21T10:20:44.000000Z',
+                    'RegistrationEndDate' => isset($medicalFile->closed_at) ? displayDateTimeXsd($medicalFile->closed_at) :  null,
+                    'AbsenceCause' => [
+                        'CauseId' => 1,
+                        'Cause' => $medicalFile->payrollVerzuimCause
+                    ],
+                ],
+            ]);
+
+            $medicalFile->update([
+                'payroll_id' => $response->Absence2_InsertResult
+            ]);
+
+            return $this->wrapArray($response->Absence2_InsertResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * NL-only. Insert a absence recovery message.
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence_RecoveryInsert 
+     * @todo determine if this is the correct method. (could also be Absence_insert.)
+     * @param $employee_id
+     * @return array
+     * @throws NmbrsException
+     */
+    public function recoverAbsenceByMedicalFile($medicalFile){
+        try {
+            $response = $this->employeeClient->Absence_RecoveryInsert([
+                'EmployeeId' => $medicalFile->employee->payroll_id,
+                'AbsenceID' => $medicalFile->payroll_id,
+                'Lastdayabsence' => displayDateTimeXsd($medicalFile->closed_at),
+                'Reportdate' => displayDateTimeXsd($medicalFile->closed_at),
+                'Comment' => $medicalFile->tasks()->where('name', 'Betermelding')->latest()->first()->description ?? null,
+                
+            ]);
+            return $this->wrapArray($response->Absence_RecoveryInsertResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * NL-only. Insert a absence partial recovery message.
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence2_Insert 
+     * @todo determine if this is the correct method. (could also be Absence_insert.)
+     * @param $employee_id
+     * @return array
+     * @throws NmbrsException
+     */
+    public function partialRecoverAbsenceByMedicalFile($medicalFile){
+
+        try {
+            $response = $this->employeeClient->Absence_PartialRecoveryInsert([
+                'EmployeeId' => $medicalFile->employee->payroll_id,
+                'AbsenceID' => $medicalFile->payroll_id,
+                // 'StartDate' => end($medicalFile->course_absence_percentage)['start'],
+                'StartDate' => displayDateTimeXsd($medicalFile->latest_course_absence_percentage['start']),
+                'Reportdate' => displayDateTimeXsd($medicalFile->latest_course_absence_percentage['start']),
+                'Percent' => $medicalFile->sick_percentage,
+                'Comment' => null, 
+            ]);
+            return $this->wrapArray($response->Absence_PartialRecoveryInsertResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
 }
