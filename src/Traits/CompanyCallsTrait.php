@@ -10,6 +10,13 @@ trait CompanyCallsTrait
 {
     protected $companyCache = [];
 
+    /**
+     * getAllCompaniesByDebtorId
+     * https://api.nmbrs.nl/soap/v3/CompanyService.asmx?op=List_GetByDebtor
+     * @param $id
+     * @return array
+     * @throws NmbrsException
+     */
     public function getAllCompaniesByDebtorId($id)
     {
         try {
@@ -21,6 +28,13 @@ trait CompanyCallsTrait
         }
     }
 
+    /**
+     * getCurrentAddressByCompanyId
+     * https://api.nmbrs.nl/soap/v3/CompanyService.asmx?op=Address_GetCurrent
+     * @param $id
+     * @return array
+     * @throws NmbrsException
+     */
     public function getCurrentAddressByCompanyId($id)
     {
         try {
@@ -32,11 +46,25 @@ trait CompanyCallsTrait
         }
     }
 
-    public function getFirstCompanyByDeb6torId($id)
+    /**
+     * getFirstCompanyByDeb6torId
+     * https://api.nmbrs.nl/soap/v3/CompanyService.asmx?op=
+     * @param $id
+     * @return array
+     * @throws NmbrsException
+     */
+    public function getFirstCompanyByDebtorId($id)
     {
         return $this->getAllCompaniesByDebtorId($id)[0] ?? null;
     }
 
+    /**
+     * getAllWageTaxByYear
+     * https://api.nmbrs.nl/soap/v3/CompanyService.asmx?op=WageTax_GetList
+     * @param $companyId, $year
+     * @return array
+     * @throws NmbrsException
+     */
     public function getAllWageTaxByYear($companyId, $year)
     {
         try {
@@ -51,6 +79,13 @@ trait CompanyCallsTrait
         }
     }
 
+    /**
+     * getAllRunsByYear
+     * https://api.nmbrs.nl/soap/v3/CompanyService.asmx?op=Run_GetList
+     * @param $companyId, $year
+     * @return array
+     * @throws NmbrsException
+     */
     public function getAllRunsByYear($companyId, $year)
     {
         try {
@@ -65,6 +100,13 @@ trait CompanyCallsTrait
         }
     }
 
+    /**
+     * getPayslipsPdf
+     * https://api.nmbrs.nl/soap/v3/CompanyService.asmx?op=SalaryDocuments_GetAllPayslipsPDFByRunCompany_v2
+     * @param $companyId, $year, $runId
+     * @return array
+     * @throws NmbrsException
+     */
     public function getPayslipsPdf($companyId, $year, $runId)
     {
         try {
@@ -80,6 +122,13 @@ trait CompanyCallsTrait
         }
     }
 
+    /**
+     * getWageTaxXml
+     * https://api.nmbrs.nl/soap/v3/CompanyService.asmx?op=WageTax_GetXML
+     * @param $companyId, $wageDeclarationId
+     * @return array
+     * @throws NmbrsException
+     */
     public function getWageTaxXml($companyId, $wageDeclarationId)
     {
         try {
@@ -95,6 +144,13 @@ trait CompanyCallsTrait
     }
 
 
+    /**
+     * setWageTaxSendExternal
+     * https://api.nmbrs.nl/soap/v3/CompanyService.asmx?op=WageTax_SetSentExternal
+     * @param $companyId, $wageDeclarationId
+     * @return array
+     * @throws NmbrsException
+     */
     public function setWageTaxSendExternal($companyId, $wageDeclarationId)
     {
         try {
@@ -109,6 +165,12 @@ trait CompanyCallsTrait
         }
     }
 
+    /**
+     * getHighestCompanyNumber
+     * https://api.nmbrs.nl/soap/v3/CompanyService.asmx?op=
+     * @return array
+     * @throws NmbrsException
+     */
     public function getHighestCompanyNumber()
     {
         $highestNumber = 0;
@@ -122,6 +184,12 @@ trait CompanyCallsTrait
         return $highestNumber;
     }
 
+    /**
+     * getAllCompanies
+     * https://api.nmbrs.nl/soap/v3/CompanyService.asmx?op=List_GetAll
+     * @return array
+     * @throws NmbrsException
+     */
     public function getAllCompanies()
     {
         if(count($this->companyCache) > 0) {
@@ -140,6 +208,13 @@ trait CompanyCallsTrait
         }
     }
 
+    /**
+     * getCompanyById
+     * https://api.nmbrs.nl/soap/v3/CompanyService.asmx?op=
+     * @param $id
+     * @return array
+     * @throws NmbrsException
+     */
     public function getCompanyById($id)
     {
         foreach($this->getAllCompanies() as $company) {
@@ -151,6 +226,13 @@ trait CompanyCallsTrait
         return null;
     }
 
+    /**
+     * createCompanyForDeptor
+     * https://api.nmbrs.nl/soap/v3/CompanyService.asmx?op=Company_Insert
+     * @param $deptorId, $data
+     * @return array
+     * @throws NmbrsException
+     */
     public function createCompanyForDeptor($deptorId, $data)
     {
         $data['DebtorId'] = $deptorId;
@@ -165,6 +247,13 @@ trait CompanyCallsTrait
         }
     }
 
+    /**
+     * createAddressForCompany
+     * https://api.nmbrs.nl/soap/v3/CompanyService.asmx?op=Address_Insert
+     * @param $companyId, $newData = []
+     * @return array
+     * @throws NmbrsException
+     */
     public function createAddressForCompany($companyId, $newData = [])
     {
         $data['Address'] = $newData;
@@ -180,7 +269,15 @@ trait CompanyCallsTrait
         }
     }
 
-    public function updateAddressForCompany($companyId, $addressId, $newData = []) {
+    /**
+     * updateAddressForCompany
+     * https://api.nmbrs.nl/soap/v3/CompanyService.asmx?op=Address_Update
+     * @param $companyId, $addressId, $newData = []
+     * @return array
+     * @throws NmbrsException
+     */
+    public function updateAddressForCompany($companyId, $addressId, $newData = []) 
+    {
 
         $data['Address'] = $newData;
         $data['Address']['Id'] = $addressId;
@@ -195,6 +292,13 @@ trait CompanyCallsTrait
         }
     }
 
+    /**
+     * createBankAccountForCompany
+     * https://api.nmbrs.nl/soap/v3/CompanyService.asmx?op=BankAccount_Insert
+     * @param $companyId, $newData = []
+     * @return array
+     * @throws NmbrsException
+     */
     public function createBankAccountForCompany($companyId, $newData = [])
     {
         $data['BankAccount'] = $newData;
@@ -210,7 +314,15 @@ trait CompanyCallsTrait
         }
     }
 
-    public function updateBankAccountForCompany($companyId, $bankAccountId, $newData = []) {
+    /**
+     * updateBankAccountForCompany
+     * https://api.nmbrs.nl/soap/v3/CompanyService.asmx?op=BankAccount_Update
+     * @param $companyId, $bankAccountId, $newData = []
+     * @return array
+     * @throws NmbrsException
+     */
+    public function updateBankAccountForCompany($companyId, $bankAccountId, $newData = []) 
+    {
 
         $data['BankAccount'] = $newData;
         $data['BankAccount']['Id'] = $bankAccountId;
@@ -225,7 +337,15 @@ trait CompanyCallsTrait
         }
     }
 
-    public function getDefaultBankAccountForCompany($companyId) {
+    /**
+     * getDefaultBankAccountForCompany
+     * https://api.nmbrs.nl/soap/v3/CompanyService.asmx?op=BankAccount_GetCurrent
+     * @param $companyId
+     * @return array
+     * @throws NmbrsException
+     */
+    public function getDefaultBankAccountForCompany($companyId) 
+    {
         try {
             $result = $this->companyClient->BankAccount_GetCurrent(['CompanyId' => $companyId]);
 
