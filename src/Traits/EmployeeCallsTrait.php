@@ -103,22 +103,6 @@ trait EmployeeCallsTrait
     }
 
     /**
-     * Get All contracts for a given Employee
-     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Contract_GetAll
-     * @param $employee_id
-     * @return array
-     * @throws NmbrsException
-     */
-    public function getAllContractsByEmployee($employee_id){
-        try {
-            $response = $this->employeeClient->Contract_GetAll(['EmployeeId' => $employee_id]);
-            return $this->wrapArray($response->Contract_GetAllResult);
-        } catch (\Exception $e) {
-            throw new NmbrsException($e->getMessage());
-        }
-    }
-
-    /**
      * Get current active department by EmployeeID
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Department_GetCurrent
      * @param $employee_id
@@ -167,6 +151,37 @@ trait EmployeeCallsTrait
         }
     }
 
+    /**
+     * Get All contracts for a given Employee
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Contract_GetAll
+     * @param $employee_id
+     * @return array
+     * @throws NmbrsException
+     */
+    public function getAllContractsByEmployee($employee_id){
+        try {
+            $response = $this->employeeClient->Contract_GetAll(['EmployeeId' => $employee_id]);
+            return $this->wrapArray($response->Contract_GetAllResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get All contracts for a given Employee
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=LeaveBalance_Get
+     * @param $employee_id
+     * @return array
+     * @throws NmbrsException
+     */
+    public function getLeaveBalance($employee_id){
+        try {
+            $response = $this->employeeClient->LeaveBalance_Get(['EmployeeId' => $employee_id]);
+            return $this->wrapArray($response->LeaveBalance_GetResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
 
     /**
      * Get current labour agreement settings for current period by EmployeeID
@@ -180,6 +195,22 @@ trait EmployeeCallsTrait
         try {
             $response = $this->employeeClient->LabourAgreements_GetCurrent(['EmployeeId' => $employee_id]);
             return $this->wrapArray($response->LabourAgreements_GetCurrentResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get all labour agreement settings for current period by EmployeeID
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=LabourAgreements_Get 
+     * @param $employee_id
+     * @return array
+     * @throws NmbrsException
+     */
+    public function getAllLabourAgreementsByEmployee($employee_id){
+        try {
+            $response = $this->employeeClient->LabourAgreements_Get(['EmployeeId' => $employee_id]);
+            return $this->wrapArray($response->LabourAgreements_GetResult);
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
         }
