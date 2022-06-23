@@ -216,6 +216,21 @@ trait EmployeeCallsTrait
         }
     }
 
+    /**
+     * Get all employee types
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=EmployeeType_GetList 
+     * @return array
+     * @throws NmbrsException
+     */
+    public function getListOfEmployeeTypes(){
+        try {
+            $response = $this->employeeClient->EmployeeType_GetList();
+            return $this->wrapArray($response->EmployeeType_GetListResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
     /*
     |--------------------------------------------------------------------------
     | SETTERS
@@ -239,10 +254,10 @@ trait EmployeeCallsTrait
                 'Absence' => [
                     'AbsenceId' => '',
                     // 'AbsenceId' => $medicalFile->payroll_id ?? null,
-                    'Percentage' => $medicalFile->sick_percentage,
                     'Comment' => $medicalFile->particularities ?? null,
-                    'Dossiernr' => $medicalFile->uuid,
+                    'Percentage' => $medicalFile->sick_percentage,
                     'Dossier' => $medicalFile->type, //$medicalFile->started_at,
+                    'Dossiernr' => $medicalFile->uuid,
                     'Start' => displayDateTimeXsd($medicalFile->started_at), // '2022-06-21T10:20:44.000000Z',
                     'End' => isset($medicalFile->closed_at) ? displayDateTimeXsd($medicalFile->closed_at) :  null,
                     'RegistrationStartDate' => displayDateTimeXsd($medicalFile->date_of_execution), // '2022-06-21T10:20:44.000000Z',
