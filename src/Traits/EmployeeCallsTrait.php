@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace Mijnkantoor\NMBRS\Traits;
 
+use App\Traits\ActivityLog;
 use Mijnkantoor\NMBRS\Exceptions\NmbrsException;
 
 trait EmployeeCallsTrait
 {
-    /*
-    |--------------------------------------------------------------------------
-    | GETTERS
-    |--------------------------------------------------------------------------
-    |
-    */
+    use ActivityLog;
 
     /**
      * Get functions for each employee in a given company
@@ -26,7 +22,6 @@ trait EmployeeCallsTrait
     {
         try {
             $response = $this->employeeClient->Function_GetAll_AllEmployeesByCompany_V2(['CompanyID' => $company_id]);
-
             return $this->wrapArray($response->Function_GetAll_AllEmployeesByCompany_V2Result);
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
@@ -231,13 +226,6 @@ trait EmployeeCallsTrait
         }
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | SETTERS
-    |--------------------------------------------------------------------------
-    |
-    */
-
     /**
      * NL-only. Insert a absence with cause, this item will start from the given date in the object.
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence2_Insert 
@@ -247,35 +235,44 @@ trait EmployeeCallsTrait
      * @throws NmbrsException
      */
     public function setAbsenceByMedicalFile($medicalFile){
+
+        /**  
+         * info: NMBRS doesnt work with composed medicalFiles. 
+         * action: create a new one every time a medicalFiles reopens.
+         */
+        $dossiernr = $medicalFile->id;
+        if($verzuimFrequency = $medicalFile->getVerzuimFrequency() > 1) {
+            $dossiernr = $dossiernr . 0000 . $verzuimFrequency;
+        }
+
+        $input = [
+            'EmployeeId' => $medicalFile->employee->payroll_id,
+            'NewDossier' => $medicalFile->tasks()->where('type', 'open_medicalFile')->first() ? false : true,
+            'Absence' => [
+                'AbsenceId' => 123456789,
+                'Comment' => $medicalFile->particularities ?? null,
+                'Dossier' => $medicalFile->payrollVerzuimType,
+                'Dossiernr' => $dossiernr,
+                // 'Dossiernr' => 7654321,
+                'End' => isset($medicalFile->closed_at) ? displayDateTimeXsd($medicalFile->closed_at) :  null,
+                'Percentage' => $medicalFile->sick_percentage ?? '',
+                'RegistrationEndDate' => isset($medicalFile->closed_at) ? displayDateTimeXsd($medicalFile->closed_at) :  null,
+                'RegistrationStartDate' => displayDateTimeXsd($medicalFile->started_at), // '2022-06-21T10:20:44.000000Z',
+                'Start' => displayDateTimeXsd($medicalFile->started_at), // '2022-06-21T10:20:44.000000Z',
+            ],
+        ];
+
         try {
-            $response = $this->employeeClient->Absence2_Insert([
-                'EmployeeId' => $medicalFile->employee->payroll_id,
-                'NewDossier' => $medicalFile->tasks()->where('type', 'open_medicalFile')->first() ? false : true,
-                'Absence' => [
-                    'AbsenceId' => '',
-                    // 'AbsenceId' => $medicalFile->payroll_id ?? null,
-                    'Comment' => $medicalFile->particularities ?? null,
-                    'Percentage' => $medicalFile->sick_percentage,
-                    'Dossier' => $medicalFile->type, //$medicalFile->started_at,
-                    'Dossiernr' => $medicalFile->uuid,
-                    'Start' => displayDateTimeXsd($medicalFile->started_at), // '2022-06-21T10:20:44.000000Z',
-                    'End' => isset($medicalFile->closed_at) ? displayDateTimeXsd($medicalFile->closed_at) :  null,
-                    'RegistrationStartDate' => displayDateTimeXsd($medicalFile->date_of_execution), // '2022-06-21T10:20:44.000000Z',
-                    'RegistrationEndDate' => isset($medicalFile->closed_at) ? displayDateTimeXsd($medicalFile->closed_at) :  null,
-                    'AbsenceCause' => [
-                        'CauseId' => 1,
-                        'Cause' => $medicalFile->payrollVerzuimCause
-                    ],
-                ],
-            ]);
+            $response = $this->employeeClient->Absence_Insert($input);
 
             $medicalFile->update([
-                'payroll_id' => $response->Absence2_InsertResult
+                'payroll_id' => $response->Absence_InsertResult
             ]);
 
-            return $this->wrapArray($response->Absence2_InsertResult);
+            return $this->wrapArray($response->Absence_InsertResult);
         } catch (\Exception $e) {
-            throw new NmbrsException($e->getMessage());
+            $this->errorLog($e, 'Nmbrs', $medicalFile->employee, 'Fout bij versturen van verzuimmelding naar NMBRS', $input);
+            // throw new NmbrsException($e->getMessage());
         }
     }
 
@@ -287,19 +284,21 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function recoverAbsenceByMedicalFile($medicalFile){
+    public function recoverAbsenceByMedicalFile($medicalFile) {
+        $input = [
+            'AbsenceID' => $medicalFile->payroll_id,
+            'Comment' => $medicalFile->tasks()->where('name', 'Betermelding')->latest()->first()->description ?? null,
+            'EmployeeId' => $medicalFile->employee->payroll_id,
+            'Lastdayabsence' => displayDateTimeXsd($medicalFile->closed_at),
+            'Reportdate' => displayDateTimeXsd($medicalFile->closed_at),
+        ];
+
         try {
-            $response = $this->employeeClient->Absence_RecoveryInsert([
-                'EmployeeId' => $medicalFile->employee->payroll_id,
-                'AbsenceID' => $medicalFile->payroll_id,
-                'Lastdayabsence' => displayDateTimeXsd($medicalFile->closed_at),
-                'Reportdate' => displayDateTimeXsd($medicalFile->closed_at),
-                'Comment' => $medicalFile->tasks()->where('name', 'Betermelding')->latest()->first()->description ?? null,
-                
-            ]);
+            $response = $this->employeeClient->Absence_RecoveryInsert($input);
             return $this->wrapArray($response->Absence_RecoveryInsertResult);
         } catch (\Exception $e) {
-            throw new NmbrsException($e->getMessage());
+            $this->errorLog($e, 'Nmbrs', $medicalFile->employee, 'Fout bij versturen van betermelding naar NMBRS', $input);
+            // throw new NmbrsException($e->getMessage());
         }
     }
 
@@ -311,21 +310,114 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function partialRecoverAbsenceByMedicalFile($medicalFile){
+    public function partialRecoverAbsenceByMedicalFile($medicalFile) {
+        $input = [
+            'AbsenceID' => $medicalFile->payroll_id,
+            'Comment' => null, 
+            'EmployeeId' => $medicalFile->employee->payroll_id,
+            'Percent' => $medicalFile->sick_percentage,
+            'Reportdate' => displayDateTimeXsd($medicalFile->latest_course_absence_percentage['start']),
+            'StartDate' => displayDateTimeXsd($medicalFile->latest_course_absence_percentage['start']),
+        ];
 
         try {
-            $response = $this->employeeClient->Absence_PartialRecoveryInsert([
-                'EmployeeId' => $medicalFile->employee->payroll_id,
-                'AbsenceID' => $medicalFile->payroll_id,
-                // 'StartDate' => end($medicalFile->course_absence_percentage)['start'],
-                'StartDate' => displayDateTimeXsd($medicalFile->latest_course_absence_percentage['start']),
-                'Reportdate' => displayDateTimeXsd($medicalFile->latest_course_absence_percentage['start']),
-                'Percent' => $medicalFile->sick_percentage,
-                'Comment' => null, 
-            ]);
+            $response = $this->employeeClient->Absence_PartialRecoveryInsert($input);
             return $this->wrapArray($response->Absence_PartialRecoveryInsertResult);
+        } catch (\Exception $e) {
+            $this->errorLog($e, 'Nmbrs', $medicalFile->employee, 'Fout bij versturen van bijstelling dossier naar NMBRS', $input);
+            // throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Contract_GetAll_AllEmployeesByCompany
+     * 
+     */
+    public function getAllContractsByCompany($company_id)
+    {
+        try {
+            $result = $this->employeeClient->Contract_GetAll_AllEmployeesByCompany(['CompanyID' => $company_id]);
+            return $result->Contract_GetAll_AllEmployeesByCompanyResult;
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
         }
     }
+
+    /**
+     * Employment_GetAll_AllEmployeesByCompany
+     * 
+     */
+    public function getAllEmploymentsByCompany($company_id)
+    {
+        try {
+            $result = $this->employeeClient->Employment_GetAll_AllEmployeesByCompany(['CompanyID' => $company_id]);
+            return $result->Employment_GetAll_AllEmployeesByCompanyResult;
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get employments for one employee
+     * @info: uses same call as getAllEmploymentsByCompany, but added some code to get employee specific
+     */
+    public function getAllEmploymentsByCompanyAndEmployee($company_id, $employee_id)
+    {
+        try {
+            $employments = $this->getAllEmploymentsByCompany($company_id)->EmployeeEmploymentItem;
+
+            foreach($employments as $employment) {
+                if ($employee_id == $employment->EmployeeId) {
+                    return $employment->EmployeeEmployments;
+                }
+            }
+
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get latest employment for one employee
+     * @info: uses same call as getAllEmploymentsByCompany, but added some code to get employee specific
+     */
+    public function getlatestEmploymentByCompanyAndEmployee($company_id, $employee_id)
+    {
+        try {
+            $employments = $this->getAllEmploymentsByCompany($company_id)->EmployeeEmploymentItem;
+
+            foreach($employments as $employment) {
+                if ($employee_id == $employment->EmployeeId) {
+
+                    if (is_array($employment->EmployeeEmployments->Employment)) { 
+                        $data = [];
+                        $data['Employment'] = $employment->EmployeeEmployments->Employment[0];
+                        return $data;
+                    }
+
+                    return $employment->EmployeeEmployments;
+                }
+            }
+
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get list of absence types by employee
+     * 
+     */
+    public function getAbsenceList($employee_id)
+    {
+        try {
+            $result = $this->employeeClient->Absence_GetList(['EmployeeId' => $employee_id]);
+
+            return $result;
+
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
 }
