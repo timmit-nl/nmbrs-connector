@@ -420,4 +420,25 @@ trait EmployeeCallsTrait
         }
     }
 
+    /**
+     * Get list of wage tax settings by employee
+     * 
+     */
+    public function getWageTaxSettingsByEmployee($employee_id)
+    {
+        try {
+            $result = $this->employeeClient->WageTax_Get([
+                'EmployeeId' => $employee_id,
+                'Period' => 1,
+                'Year' => now()->format('Y'),
+            ]);
+
+            return $this->wrapArray($result->WageTax_GetResult);
+
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    
 }
