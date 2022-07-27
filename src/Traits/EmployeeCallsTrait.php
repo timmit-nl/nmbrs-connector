@@ -440,5 +440,19 @@ trait EmployeeCallsTrait
         }
     }
 
-    
+    /**
+     * Get current function by employee
+     * 
+     */
+    public function getCurrentFunctionByEmployee($employee_id)
+    {
+        try {
+            $result = $this->employeeClient->Function_GetCurrent(['EmployeeId' => $employee_id]);
+
+            return $this->wrapArray($result->Function_GetCurrentResult);
+
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
 }
