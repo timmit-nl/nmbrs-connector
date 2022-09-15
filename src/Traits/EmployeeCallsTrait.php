@@ -35,7 +35,8 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function getAllAddressEmployeesByCompany($company_id){
+    public function getAllAddressEmployeesByCompany($company_id)
+    {
         try {
             $response = $this->employeeClient->Address_GetAll_AllEmployeesByCompany(['CompanyID' => $company_id]);
             return $this->wrapArray($response->Address_GetAll_AllEmployeesByCompanyResult);
@@ -51,7 +52,8 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function getAllAbsenceEmployeesByCompany($company_id){
+    public function getAllAbsenceEmployeesByCompany($company_id)
+    {
         try {
             $response = $this->employeeClient->Absence_GetAll_AllEmployeesByCompany(['CompanyId' => $company_id]);
             return $this->wrapArray($response->Absence_GetAll_AllEmployeesByCompanyResult);
@@ -67,7 +69,8 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function getAllPersonalInfoEmployeesByCompany($company_id){
+    public function getAllPersonalInfoEmployeesByCompany($company_id)
+    {
         try {
             $response = $this->employeeClient->PersonalInfo_GetAll_AllEmployeesByCompany(['CompanyID' => $company_id]);
             return $this->wrapArray($response->PersonalInfo_GetAll_AllEmployeesByCompanyResult);
@@ -83,11 +86,12 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function getAllPersonalInfoContractSalaryAddressEmployeesByCompany($company_id){
+    public function getAllPersonalInfoContractSalaryAddressEmployeesByCompany($company_id)
+    {
         try {
             $response = $this->employeeClient->PersonalInfoContractSalaryAddress_GetAll_AllEmployeesByCompany(['CompanyID' => $company_id]);
 
-            if (count($response->PersonalInfoContractSalaryAddress_GetAll_AllEmployeesByCompanyResult->PersonalInfoContractSalaryAddress) > 1) {
+            if (property_exists($response->PersonalInfoContractSalaryAddress_GetAll_AllEmployeesByCompanyResult, 'PersonalInfoContractSalaryAddress')) {
                 return $response->PersonalInfoContractSalaryAddress_GetAll_AllEmployeesByCompanyResult->PersonalInfoContractSalaryAddress;
             }
 
@@ -104,7 +108,8 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function getCurrentDepartmentByEmployee($employee_id){
+    public function getCurrentDepartmentByEmployee($employee_id)
+    {
         try {
             $response = $this->employeeClient->Department_GetCurrent(['EmployeeId' => $employee_id]);
             return $this->wrapArray($response->Department_GetCurrentResult);
@@ -120,7 +125,8 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function getCurrentPersonalInfoByEmployee($employee_id){
+    public function getCurrentPersonalInfoByEmployee($employee_id)
+    {
         try {
             $response = $this->employeeClient->PersonalInfo_GetCurrent(['EmployeeId' => $employee_id]);
             return $this->wrapArray($response->PersonalInfo_GetCurrentResult);
@@ -137,11 +143,24 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function getCurrentContractByEmployee($employee_id){
+    public function getCurrentContractByEmployee($employee_id)
+    {
         try {
             $response = $this->employeeClient->Contract_GetCurrentPeriod(['EmployeeId' => $employee_id]);
-            return $this->wrapArray($response->EmployeeContractItem->EmployeeContracts);
-        } catch (\Exception $e) {
+            
+            if (! property_exists($response->EmployeeContractItem->EmployeeContracts, 'EmployeeContract')) {
+                return $this->wrapArray((object) ['EmployeeContract' => []]);
+            }
+
+            foreach($response->EmployeeContractItem->EmployeeContracts->EmployeeContract as $key => $item) {
+                if(is_string($key)) {
+                    return $this->wrapArray($response->EmployeeContractItem->EmployeeContracts);
+                } else {
+                    return $this->wrapArray((object) ['EmployeeContract' => end($response->EmployeeContractItem->EmployeeContracts->EmployeeContract)]);
+                }
+            }
+
+        } catch (\Exception $e) { 
             throw new NmbrsException($e->getMessage());
         }
     }
@@ -153,7 +172,8 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function getAllContractsByEmployee($employee_id){
+    public function getAllContractsByEmployee($employee_id)
+    {
         try {
             $response = $this->employeeClient->Contract_GetAll(['EmployeeId' => $employee_id]);
             return $this->wrapArray($response->Contract_GetAllResult);
@@ -169,7 +189,8 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function getLeaveBalance($employee_id){
+    public function getLeaveBalance($employee_id)
+    {
         try {
             $response = $this->employeeClient->LeaveBalance_Get(['EmployeeId' => $employee_id]);
             return $this->wrapArray($response->LeaveBalance_GetResult);
@@ -186,7 +207,8 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function getCurrentLabourAgreementsByEmployee($employee_id){
+    public function getCurrentLabourAgreementsByEmployee($employee_id)
+    {
         try {
             $response = $this->employeeClient->LabourAgreements_GetCurrent(['EmployeeId' => $employee_id]);
             return $this->wrapArray($response->LabourAgreements_GetCurrentResult);
@@ -202,7 +224,8 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function getAllLabourAgreementsByEmployee($employee_id){
+    public function getAllLabourAgreementsByEmployee($employee_id)
+    {
         try {
             $response = $this->employeeClient->LabourAgreements_Get(['EmployeeId' => $employee_id]);
             return $this->wrapArray($response->LabourAgreements_GetResult);
@@ -217,7 +240,8 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function getListOfEmployeeTypes(){
+    public function getListOfEmployeeTypes()
+    {
         try {
             $response = $this->employeeClient->EmployeeType_GetList();
             return $this->wrapArray($response->EmployeeType_GetListResult);
@@ -234,25 +258,18 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function setAbsenceByMedicalFile($medicalFile){
-
-        /**  
-         * info: NMBRS doesnt work with composed medicalFiles. 
-         * action: create a new one every time a medicalFiles reopens.
-         */
-        $dossiernr = $medicalFile->id;
-        if($verzuimFrequency = $medicalFile->getVerzuimFrequency() > 1) {
-            $dossiernr = $dossiernr . 0000 . $verzuimFrequency;
-        }
+    public function setAbsenceByNewMedicalFile($medicalFile)
+    {
 
         $input = [
             'EmployeeId' => $medicalFile->employee->payroll_id,
-            'NewDossier' => $medicalFile->tasks()->where('type', 'open_medicalFile')->first() ? false : true,
+            'NewDossier' => true,
             'Absence' => [
-                'AbsenceId' => 123456789,
+                'AbsenceId' => $medicalFile->id,
+                // 'AbsenceId' => 123456789,
                 'Comment' => $medicalFile->particularities ?? null,
                 'Dossier' => $medicalFile->payrollVerzuimType,
-                'Dossiernr' => $dossiernr,
+                'Dossiernr' => $medicalFile->id,
                 // 'Dossiernr' => 7654321,
                 'End' => isset($medicalFile->closed_at) ? displayDateTimeXsd($medicalFile->closed_at) :  null,
                 'Percentage' => $medicalFile->sick_percentage ?? '',
@@ -269,11 +286,83 @@ trait EmployeeCallsTrait
                 'payroll_id' => $response->Absence_InsertResult
             ]);
 
-            return $this->wrapArray($response->Absence_InsertResult);
+            $return_array = [
+                'status' => 'success', 
+                'message' => null,
+                'title' => 'Verzuimmelding verstuurd naar NMBRS'
+            ];
         } catch (\Exception $e) {
             $this->errorLog($e, 'Nmbrs', $medicalFile->employee, 'Fout bij versturen van verzuimmelding naar NMBRS', $input);
-            // throw new NmbrsException($e->getMessage());
+
+            $return_array = [
+                'status' => 'failed', 
+                'message' => $e->getMessage(),
+                'title' => 'Fout bij versturen van verzuimmelding naar NMBRS'
+            ];
         }
+
+        return $return_array;
+    }
+
+    /**
+     * NL-only. Insert a absence with cause, this item will start from the given date in the object.
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence2_Insert 
+     * @todo determine if this is the correct method. (could also be Absence_insert.)
+     * @param $employee_id
+     * @return array
+     * @throws NmbrsException
+     */
+    public function setAbsenceByReopenedMedicalFile($medicalFile)
+    {
+        /**  
+         * info: NMBRS doesnt work with composed medicalFiles. 
+         * action: create a new one every time a medicalFiles reopens.
+         */
+        $dossiernr = $medicalFile->id . '000000' . $medicalFile->getVerzuimFrequency();
+        $reopened_at = $medicalFile->tasks()->where('type', 'open_medicalFile')->latest()->first()->start_date ?? now();
+
+        $input = [
+            'EmployeeId' => $medicalFile->employee->payroll_id,
+            // 'NewDossier' => $medicalFile->tasks()->where('type', 'open_medicalFile')->first() ? false : true,
+            'NewDossier' => true,
+            'Absence' => [
+                // 'AbsenceId' => '',
+                'AbsenceId' => (int) $dossiernr,
+                'Comment' => $medicalFile->particularities ?? null,
+                'Dossier' => $medicalFile->payrollVerzuimType,
+                'Dossiernr' => (int) $dossiernr,
+                // 'Dossiernr' => 7654321,
+                'End' => isset($medicalFile->closed_at) ? displayDateTimeXsd($medicalFile->closed_at) :  null,
+                'Percentage' => $medicalFile->sick_percentage ?? '',
+                'RegistrationEndDate' => isset($medicalFile->closed_at) ? displayDateTimeXsd($medicalFile->closed_at) :  null,
+                'RegistrationStartDate' => displayDateTimeXsd($reopened_at), // '2022-06-21T10:20:44.000000Z',
+                'Start' => displayDateTimeXsd($reopened_at), // '2022-06-21T10:20:44.000000Z',
+            ],
+        ];
+
+        try {
+            $response = $this->employeeClient->Absence_Insert($input);
+
+            $medicalFile->update([
+                'payroll_id' => $response->Absence_InsertResult
+            ]);
+
+            $return_array = [
+                'status' => 'success', 
+                'message' => null,
+                'title' => 'Dossier heropend melding verstuurd naar NMBRS',
+            ];
+        } catch (\Exception $e) {
+            $this->errorLog($e, 'Nmbrs', $medicalFile->employee, 'Fout bij versturen van dossier heropend melding naar NMBRS', $input);
+
+            $return_array = [
+                'status' => 'failed', 
+                'message' => $e->getMessage(),
+                'title' => 'Fout bij versturen van dossier heropend melding naar NMBRS',
+            ];
+        }
+
+        return $return_array;
     }
 
     /**
@@ -284,7 +373,8 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function recoverAbsenceByMedicalFile($medicalFile) {
+    public function recoverAbsenceByMedicalFile($medicalFile) 
+    {
         $input = [
             'AbsenceID' => $medicalFile->payroll_id,
             'Comment' => $medicalFile->tasks()->where('name', 'Betermelding')->latest()->first()->description ?? null,
@@ -294,12 +384,24 @@ trait EmployeeCallsTrait
         ];
 
         try {
-            $response = $this->employeeClient->Absence_RecoveryInsert($input);
-            return $this->wrapArray($response->Absence_RecoveryInsertResult);
+            $this->employeeClient->Absence_RecoveryInsert($input);
+
+            $return_array = [
+                'status' => 'success', 
+                'message' => null,
+                'title' => 'Betermelding verstuurd naar NMBRS',
+            ];
         } catch (\Exception $e) {
             $this->errorLog($e, 'Nmbrs', $medicalFile->employee, 'Fout bij versturen van betermelding naar NMBRS', $input);
-            // throw new NmbrsException($e->getMessage());
+
+            $return_array = [
+                'status' => 'failed', 
+                'message' => $e->getMessage(),
+                'title' => 'Fout bij versturen van betermelding naar NMBRS',
+            ];
         }
+
+        return $return_array;
     }
 
     /**
@@ -310,7 +412,8 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function partialRecoverAbsenceByMedicalFile($medicalFile) {
+    public function partialRecoverAbsenceByMedicalFile($medicalFile) 
+    {
         $input = [
             'AbsenceID' => $medicalFile->payroll_id,
             'Comment' => null, 
@@ -321,12 +424,24 @@ trait EmployeeCallsTrait
         ];
 
         try {
-            $response = $this->employeeClient->Absence_PartialRecoveryInsert($input);
-            return $this->wrapArray($response->Absence_PartialRecoveryInsertResult);
+            $this->employeeClient->Absence_PartialRecoveryInsert($input);
+
+            $return_array = [
+                'status' => 'success', 
+                'message' => null,
+                'title' => 'Bijstelling dossier verstuurd naar NMBRS',
+            ];
         } catch (\Exception $e) {
             $this->errorLog($e, 'Nmbrs', $medicalFile->employee, 'Fout bij versturen van bijstelling dossier naar NMBRS', $input);
-            // throw new NmbrsException($e->getMessage());
+
+            $return_array = [
+                'status' => 'failed', 
+                'message' => $e->getMessage(),
+                'title' => 'Fout bij versturen van bijstelling dossier naar NMBRS',
+            ];
         }
+
+        return $return_array;
     }
 
     /**
