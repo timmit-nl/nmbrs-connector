@@ -137,7 +137,7 @@ trait EmployeeCallsTrait
 
     /**
      * Get active contracts for current period by EmployeeID
-     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Contract_GetCurrentPeriod 
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Contract_GetCurrentPeriod
      * @todo determine if this is the correct method. (could also be Contract_GetAll.)
      * @param $employee_id
      * @return array
@@ -147,7 +147,7 @@ trait EmployeeCallsTrait
     {
         try {
             $response = $this->employeeClient->Contract_GetCurrentPeriod(['EmployeeId' => $employee_id]);
-            
+
             if (! property_exists($response->EmployeeContractItem->EmployeeContracts, 'EmployeeContract')) {
                 return $this->wrapArray((object) ['EmployeeContract' => []]);
             }
@@ -160,7 +160,7 @@ trait EmployeeCallsTrait
                 }
             }
 
-        } catch (\Exception $e) { 
+        } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
         }
     }
@@ -201,7 +201,7 @@ trait EmployeeCallsTrait
 
     /**
      * Get current labour agreement settings for current period by EmployeeID
-     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=LabourAgreements_GetCurrent 
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=LabourAgreements_GetCurrent
      * @todo determine if this is the correct method. (could also be LabourAgreements_Get.)
      * @param $employee_id
      * @return array
@@ -219,7 +219,7 @@ trait EmployeeCallsTrait
 
     /**
      * Get all labour agreement settings for current period by EmployeeID
-     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=LabourAgreements_Get 
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=LabourAgreements_Get
      * @param $employee_id
      * @return array
      * @throws NmbrsException
@@ -236,7 +236,7 @@ trait EmployeeCallsTrait
 
     /**
      * Get all employee types
-     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=EmployeeType_GetList 
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=EmployeeType_GetList
      * @return array
      * @throws NmbrsException
      */
@@ -252,7 +252,7 @@ trait EmployeeCallsTrait
 
     /**
      * NL-only. Insert a absence with cause, this item will start from the given date in the object.
-     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence2_Insert 
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence2_Insert
      * @todo determine if this is the correct method. (could also be Absence_insert.)
      * @param $employee_id
      * @return array
@@ -287,7 +287,7 @@ trait EmployeeCallsTrait
             ]);
 
             $return_array = [
-                'status' => 'success', 
+                'status' => 'success',
                 'message' => null,
                 'title' => 'Verzuimmelding verstuurd naar NMBRS'
             ];
@@ -295,7 +295,7 @@ trait EmployeeCallsTrait
             $this->errorLog($e, 'Nmbrs', $medicalFile->employee, 'Fout bij versturen van verzuimmelding naar NMBRS', $input);
 
             $return_array = [
-                'status' => 'failed', 
+                'status' => 'failed',
                 'message' => $e->getMessage(),
                 'title' => 'Fout bij versturen van verzuimmelding naar NMBRS'
             ];
@@ -306,7 +306,7 @@ trait EmployeeCallsTrait
 
     /**
      * NL-only. Insert a absence with cause, this item will start from the given date in the object.
-     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence2_Insert 
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence2_Insert
      * @todo determine if this is the correct method. (could also be Absence_insert.)
      * @param $employee_id
      * @return array
@@ -314,8 +314,8 @@ trait EmployeeCallsTrait
      */
     public function setAbsenceByReopenedMedicalFile($medicalFile)
     {
-        /**  
-         * info: NMBRS doesnt work with composed medicalFiles. 
+        /**
+         * info: NMBRS doesnt work with composed medicalFiles.
          * action: create a new one every time a medicalFiles reopens.
          */
         $dossiernr = $medicalFile->id . '000000' . $medicalFile->getVerzuimFrequency();
@@ -348,7 +348,7 @@ trait EmployeeCallsTrait
             ]);
 
             $return_array = [
-                'status' => 'success', 
+                'status' => 'success',
                 'message' => null,
                 'title' => 'Dossier heropend melding verstuurd naar NMBRS',
             ];
@@ -356,7 +356,7 @@ trait EmployeeCallsTrait
             $this->errorLog($e, 'Nmbrs', $medicalFile->employee, 'Fout bij versturen van dossier heropend melding naar NMBRS', $input);
 
             $return_array = [
-                'status' => 'failed', 
+                'status' => 'failed',
                 'message' => $e->getMessage(),
                 'title' => 'Fout bij versturen van dossier heropend melding naar NMBRS',
             ];
@@ -367,13 +367,13 @@ trait EmployeeCallsTrait
 
     /**
      * NL-only. Insert a absence recovery message.
-     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence_RecoveryInsert 
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence_RecoveryInsert
      * @todo determine if this is the correct method. (could also be Absence_insert.)
      * @param $employee_id
      * @return array
      * @throws NmbrsException
      */
-    public function recoverAbsenceByMedicalFile($medicalFile) 
+    public function recoverAbsenceByMedicalFile($medicalFile)
     {
         $input = [
             'AbsenceID' => $medicalFile->payroll_id,
@@ -387,7 +387,7 @@ trait EmployeeCallsTrait
             $this->employeeClient->Absence_RecoveryInsert($input);
 
             $return_array = [
-                'status' => 'success', 
+                'status' => 'success',
                 'message' => null,
                 'title' => 'Betermelding verstuurd naar NMBRS',
             ];
@@ -395,7 +395,7 @@ trait EmployeeCallsTrait
             $this->errorLog($e, 'Nmbrs', $medicalFile->employee, 'Fout bij versturen van betermelding naar NMBRS', $input);
 
             $return_array = [
-                'status' => 'failed', 
+                'status' => 'failed',
                 'message' => $e->getMessage(),
                 'title' => 'Fout bij versturen van betermelding naar NMBRS',
             ];
@@ -406,17 +406,17 @@ trait EmployeeCallsTrait
 
     /**
      * NL-only. Insert a absence partial recovery message.
-     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence2_Insert 
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence2_Insert
      * @todo determine if this is the correct method. (could also be Absence_insert.)
      * @param $employee_id
      * @return array
      * @throws NmbrsException
      */
-    public function partialRecoverAbsenceByMedicalFile($medicalFile) 
+    public function partialRecoverAbsenceByMedicalFile($medicalFile)
     {
         $input = [
             'AbsenceID' => $medicalFile->payroll_id,
-            'Comment' => null, 
+            'Comment' => null,
             'EmployeeId' => $medicalFile->employee->payroll_id,
             'Percent' => $medicalFile->sick_percentage,
             'Reportdate' => displayDateTimeXsd($medicalFile->latest_course_absence_percentage['start']),
@@ -427,7 +427,7 @@ trait EmployeeCallsTrait
             $this->employeeClient->Absence_PartialRecoveryInsert($input);
 
             $return_array = [
-                'status' => 'success', 
+                'status' => 'success',
                 'message' => null,
                 'title' => 'Bijstelling dossier verstuurd naar NMBRS',
             ];
@@ -435,7 +435,7 @@ trait EmployeeCallsTrait
             $this->errorLog($e, 'Nmbrs', $medicalFile->employee, 'Fout bij versturen van bijstelling dossier naar NMBRS', $input);
 
             $return_array = [
-                'status' => 'failed', 
+                'status' => 'failed',
                 'message' => $e->getMessage(),
                 'title' => 'Fout bij versturen van bijstelling dossier naar NMBRS',
             ];
@@ -446,7 +446,7 @@ trait EmployeeCallsTrait
 
     /**
      * Contract_GetAll_AllEmployeesByCompany
-     * 
+     *
      */
     public function getAllContractsByCompany($company_id)
     {
@@ -460,7 +460,7 @@ trait EmployeeCallsTrait
 
     /**
      * Employment_GetAll_AllEmployeesByCompany
-     * 
+     *
      */
     public function getAllEmploymentsByCompany($company_id)
     {
@@ -501,10 +501,25 @@ trait EmployeeCallsTrait
         try {
             $employments = $this->getAllEmploymentsByCompany($company_id)->EmployeeEmploymentItem;
 
+            # if only one employment
+            if(isset($employments->EmployeeId)) {
+                if ($employee_id == $employments->EmployeeId) {
+
+                    if (is_array($employments->EmployeeEmployments->Employment)) {
+                        $data = [];
+                        $data['Employment'] = $employments->EmployeeEmployments->Employment[0];
+                        return $data;
+                    }
+
+                    return $employments->EmployeeEmployments;
+                }
+            }
+
+            # multiple employments
             foreach($employments as $employment) {
                 if ($employee_id == $employment->EmployeeId) {
 
-                    if (is_array($employment->EmployeeEmployments->Employment)) { 
+                    if (is_array($employment->EmployeeEmployments->Employment)) {
                         $data = [];
                         $data['Employment'] = $employment->EmployeeEmployments->Employment[0];
                         return $data;
@@ -521,7 +536,7 @@ trait EmployeeCallsTrait
 
     /**
      * Get list of absence types by employee
-     * 
+     *
      */
     public function getAbsenceList($employee_id)
     {
@@ -537,7 +552,7 @@ trait EmployeeCallsTrait
 
     /**
      * Get list of wage tax settings by employee
-     * 
+     *
      */
     public function getWageTaxSettingsByEmployee($employee_id)
     {
@@ -557,7 +572,7 @@ trait EmployeeCallsTrait
 
     /**
      * Get current function by employee
-     * 
+     *
      */
     public function getCurrentFunctionByEmployee($employee_id)
     {
