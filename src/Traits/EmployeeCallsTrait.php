@@ -424,7 +424,10 @@ trait EmployeeCallsTrait
         ];
 
         try {
-            $this->employeeClient->Absence_PartialRecoveryInsert($input);
+            $response = $this->employeeClient->Absence_PartialRecoveryInsert($input);
+
+            $medicalFile->payroll_id = $response->Absence_PartialRecoveryInsertResult;
+            $medicalFile->saveQuietly();
 
             $return_array = [
                 'status' => 'success',
