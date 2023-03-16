@@ -318,7 +318,7 @@ trait EmployeeCallsTrait
          * info: NMBRS doesnt work with composed medicalFiles.
          * action: create a new one every time a medicalFiles reopens.
          */
-        $dossiernr = $medicalFile->id . '000000' . $medicalFile->getVerzuimFrequency();
+        $dossiernr = $medicalFile->id . '00' . $medicalFile->getVerzuimFrequency();
         $reopened_at = $medicalFile->tasks()->where('type', 'open_medicalFile')->latest()->first()->start_date ?? now();
 
         $input = [
