@@ -34,8 +34,8 @@ trait DebtorCallsTrait
     {
         $highestNumber = 0;
 
-        foreach($this->getAllDebtors() as $debtor) {
-            if($debtor->Number > $highestNumber || $highestNumber == null) {
+        foreach ($this->getAllDebtors() as $debtor) {
+            if ($debtor->Number > $highestNumber || $highestNumber == null) {
                 $highestNumber = $debtor->Number;
             }
         }
@@ -43,7 +43,8 @@ trait DebtorCallsTrait
         return $highestNumber;
     }
 
-    public function createDebtor($name, $number) {
+    public function createDebtor($name, $number)
+    {
         $data = [
             'Name' => $name,
             'Id' => -1, // id -1 means auto increment remote
@@ -59,7 +60,8 @@ trait DebtorCallsTrait
         }
     }
 
-    public function updateDebtor($id, $newData) {
+    public function updateDebtor($id, $newData)
+    {
 
         // request needs to be full object, unset values will be emptied on update
         $current = $this->getDepbtorById($id);
@@ -73,5 +75,4 @@ trait DebtorCallsTrait
             throw new NmbrsException($e->getMessage());
         }
     }
-
 }

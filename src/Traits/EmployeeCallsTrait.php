@@ -28,6 +28,29 @@ trait EmployeeCallsTrait
         }
     }
 
+
+
+    /**
+     * Get functions for each employee in a given company
+     *
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=List_GetByCompany
+     *
+     * @param int $company_id
+     *
+     * @return array
+     *
+     * @throws NmbrsException
+     */
+    public function getAllEmployeesByCompany(int $company_id, int $employeeType): array
+    {
+        try {
+            $response = $this->employeeClient->List_GetByCompany(['CompanyID' => $company_id, 'EmployeeType' => $employeeType]);
+            return $this->wrapArray($response->List_GetByCompanyResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
     /**
      * Get the Address for each employee in a given company
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Address_GetAll_AllEmployeesByCompany
@@ -40,6 +63,128 @@ trait EmployeeCallsTrait
         try {
             $response = $this->employeeClient->Address_GetAll_AllEmployeesByCompany(['CompanyID' => $company_id]);
             return $this->wrapArray($response->Address_GetAll_AllEmployeesByCompanyResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get the Address for each employee in a given company
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Address_GetAll_AllEmployeesByCompany
+     *
+     * @param int $employeeId
+     *
+     * @return array
+     *
+     * @throws NmbrsException
+     */
+    public function getCurrentAddressByEmployee(int $employeeId): array
+    {
+        try {
+            $response = $this->employeeClient->Address_GetListCurrent(['EmployeeId' => $employeeId]);
+            return $this->wrapArray($response->Address_GetListCurrentResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get the SVW for each employee in a given company
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=SVW_GetCurrent
+     *
+     * @param int $employeeId
+     *
+     * @return array
+     *
+     * @throws NmbrsException
+     */
+    public function getCurrentSVWByEmployee(int $employeeId): array
+    {
+        try {
+            $response = $this->employeeClient->SVW_GetCurrent(['EmployeeId' => $employeeId]);
+            return $this->wrapArray($response->SVW_GetCurrentResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get the Address for each employee in a given company
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Schedule_GetCurrent
+     *
+     * @param int $employeeId
+     *
+     * @return array
+     *
+     * @throws NmbrsException
+     */
+    public function getCurrentScheduleByEmployee(int $employeeId): array
+    {
+        try {
+            $response = $this->employeeClient->Schedule_GetCurrent(['EmployeeId' => $employeeId]);
+            return $this->wrapArray($response->Schedule_GetCurrentResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get the Address for each employee in a given company
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Schedule_GetList
+     *
+     * @param int $employeeId
+     * @param int $Period
+     * @param int $Year
+     *
+     * @return array
+     *
+     * @throws NmbrsException
+     */
+    public function getScheduleListByEmployeePeriodYear(int $employeeId, int $Period, int $Year): array
+    {
+        try {
+            $response = $this->employeeClient->Schedule_GetList(['EmployeeId' => $employeeId, 'Period' => $Period, 'Year' => $Year]);
+            return $this->wrapArray($response->Schedule_GetListResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get the Address for each employee in a given company
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=WageComponentFixed_GetCurrent
+     *
+     * @param int $employeeId
+     *
+     * @return array
+     *
+     * @throws NmbrsException
+     */
+    public function getCurrentWageComponentFixedByEmployee(int $employeeId): array
+    {
+        try {
+            $response = $this->employeeClient->WageComponentFixed_GetCurrent(['EmployeeId' => $employeeId]);
+            return $this->wrapArray($response->WageComponentFixed_GetCurrentResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get the Address for each employee in a given company
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=WageComponentVar_GetCurrent
+     *
+     * @param int $employeeId
+     *
+     * @return array
+     *
+     * @throws NmbrsException
+     */
+    public function getCurrentWageComponentVarByEmployee(int $employeeId): array
+    {
+        try {
+            $response = $this->employeeClient->WageComponentVar_GetCurrent(['EmployeeId' => $employeeId]);
+            return $this->wrapArray($response->WageComponentVar_GetCurrentResult);
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
         }
@@ -74,6 +219,30 @@ trait EmployeeCallsTrait
         try {
             $response = $this->employeeClient->PersonalInfo_GetAll_AllEmployeesByCompany(['CompanyID' => $company_id]);
             return $this->wrapArray($response->PersonalInfo_GetAll_AllEmployeesByCompanyResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get salary for all employees in a given company
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=PersonalInfoContractSalaryAddress_GetAll_AllEmployeesByCompany
+     *
+     * @param int $company_id
+     *
+     * @return array
+     * @throws NmbrsException
+     */
+    public function getAllSalaryEmployeesByCompany(int $company_id): array
+    {
+        try {
+            $response = $this->employeeClient->Salary_GetAll_AllEmployeesByCompany(['CompanyID' => $company_id]);
+
+            // if (property_exists($response->Salary_GetAll_AllEmployeesByCompanyResult, 'EmployeeSalaryItem')) {
+            //     return $response->Salary_GetAll_AllEmployeesByCompanyResult->EmployeeSalaryItem;
+            // }
+
+            return $this->wrapArray($response->Salary_GetAll_AllEmployeesByCompanyResult);
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
         }
@@ -121,11 +290,13 @@ trait EmployeeCallsTrait
     /**
      * Get current active personal info by EmployeeID
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=PersonalInfo_GetCurrent
-     * @param $employee_id
+     *
+     * @param int $employee_id
+     *
      * @return array
      * @throws NmbrsException
      */
-    public function getCurrentPersonalInfoByEmployee($employee_id)
+    public function getCurrentPersonalInfoByEmployee(int $employee_id)
     {
         try {
             $response = $this->employeeClient->PersonalInfo_GetCurrent(['EmployeeId' => $employee_id]);
@@ -139,27 +310,29 @@ trait EmployeeCallsTrait
      * Get active contracts for current period by EmployeeID
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Contract_GetCurrentPeriod
      * @todo determine if this is the correct method. (could also be Contract_GetAll.)
-     * @param $employee_id
+     *
+     * @param int $employee_id
+     *
      * @return array
+     *
      * @throws NmbrsException
      */
-    public function getCurrentContractByEmployee($employee_id)
+    public function getCurrentContractByEmployee(int $employee_id): array
     {
         try {
             $response = $this->employeeClient->Contract_GetCurrentPeriod(['EmployeeId' => $employee_id]);
 
-            if (! property_exists($response->EmployeeContractItem->EmployeeContracts, 'EmployeeContract')) {
+            if (!property_exists($response->EmployeeContractItem->EmployeeContracts, 'EmployeeContract')) {
                 return $this->wrapArray((object) ['EmployeeContract' => []]);
             }
 
-            foreach($response->EmployeeContractItem->EmployeeContracts->EmployeeContract as $key => $item) {
-                if(is_string($key)) {
+            foreach ($response->EmployeeContractItem->EmployeeContracts->EmployeeContract as $key => $item) {
+                if (is_string($key)) {
                     return $this->wrapArray($response->EmployeeContractItem->EmployeeContracts);
                 } else {
                     return $this->wrapArray((object) ['EmployeeContract' => end($response->EmployeeContractItem->EmployeeContracts->EmployeeContract)]);
                 }
             }
-
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
         }
@@ -463,9 +636,13 @@ trait EmployeeCallsTrait
 
     /**
      * Employment_GetAll_AllEmployeesByCompany
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Employment_GetAll_AllEmployeesByCompany
      *
+     * @param string $company_id
+     *
+     * @return
      */
-    public function getAllEmploymentsByCompany($company_id)
+    public function getAllEmploymentsByCompany(string $company_id): object
     {
         try {
             $result = $this->employeeClient->Employment_GetAll_AllEmployeesByCompany(['CompanyID' => $company_id]);
@@ -484,12 +661,11 @@ trait EmployeeCallsTrait
         try {
             $employments = $this->getAllEmploymentsByCompany($company_id)->EmployeeEmploymentItem;
 
-            foreach($employments as $employment) {
+            foreach ($employments as $employment) {
                 if ($employee_id == $employment->EmployeeId) {
                     return $employment->EmployeeEmployments;
                 }
             }
-
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
         }
@@ -505,7 +681,7 @@ trait EmployeeCallsTrait
             $employments = $this->getAllEmploymentsByCompany($company_id)->EmployeeEmploymentItem;
 
             # if only one employment
-            if(isset($employments->EmployeeId)) {
+            if (isset($employments->EmployeeId)) {
                 if ($employee_id == $employments->EmployeeId) {
 
                     if (is_array($employments->EmployeeEmployments->Employment)) {
@@ -519,7 +695,7 @@ trait EmployeeCallsTrait
             }
 
             # multiple employments
-            foreach($employments as $employment) {
+            foreach ($employments as $employment) {
                 if ($employee_id == $employment->EmployeeId) {
 
                     if (is_array($employment->EmployeeEmployments->Employment)) {
@@ -531,7 +707,6 @@ trait EmployeeCallsTrait
                     return $employment->EmployeeEmployments;
                 }
             }
-
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
         }
@@ -547,7 +722,6 @@ trait EmployeeCallsTrait
             $result = $this->employeeClient->Absence_GetList(['EmployeeId' => $employee_id]);
 
             return $result;
-
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
         }
@@ -567,7 +741,6 @@ trait EmployeeCallsTrait
             ]);
 
             return $this->wrapArray($result->WageTax_GetResult);
-
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
         }
@@ -583,7 +756,6 @@ trait EmployeeCallsTrait
             $result = $this->employeeClient->Function_GetCurrent(['EmployeeId' => $employee_id]);
 
             return $this->wrapArray($result->Function_GetCurrentResult);
-
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
         }
