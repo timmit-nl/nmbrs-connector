@@ -4,21 +4,24 @@ declare(strict_types=1);
 
 namespace Mijnkantoor\NMBRS\Traits;
 
-use App\Traits\ActivityLog;
+// use App\Traits\ActivityLog;
 use Mijnkantoor\NMBRS\Exceptions\NmbrsException;
 
 trait EmployeeCallsTrait
 {
-    use ActivityLog;
+    // use ActivityLog;
 
     /**
      * Get functions for each employee in a given company
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Function_GetAll_AllEmployeesByCompany_V2
-     * @param $company_id
+     *
+     * @param int $company_id
+     *
      * @return array
+     *
      * @throws NmbrsException
      */
-    public function getFunctionAllEmployeesByCompany($company_id)
+    public function getFunctionAllEmployeesByCompany(int $company_id): array
     {
         try {
             $response = $this->employeeClient->Function_GetAll_AllEmployeesByCompany_V2(['CompanyID' => $company_id]);
@@ -54,11 +57,14 @@ trait EmployeeCallsTrait
     /**
      * Get the Address for each employee in a given company
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Address_GetAll_AllEmployeesByCompany
+     *
      * @param $company_id
+     *
      * @return array
+     *
      * @throws NmbrsException
      */
-    public function getAllAddressEmployeesByCompany($company_id)
+    public function getAllAddressEmployeesByCompany(int $company_id): array
     {
         try {
             $response = $this->employeeClient->Address_GetAll_AllEmployeesByCompany(['CompanyID' => $company_id]);
@@ -114,15 +120,15 @@ trait EmployeeCallsTrait
      *
      * @param int $employeeId
      *
-     * @return array
+     * @return object
      *
      * @throws NmbrsException
      */
-    public function getCurrentScheduleByEmployee(int $employeeId): array
+    public function getCurrentScheduleByEmployee(int $employeeId): object
     {
         try {
             $response = $this->employeeClient->Schedule_GetCurrent(['EmployeeId' => $employeeId]);
-            return $this->wrapArray($response->Schedule_GetCurrentResult);
+            return $response->Schedule_GetCurrentResult;
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
         }
@@ -172,6 +178,27 @@ trait EmployeeCallsTrait
 
     /**
      * Get the Address for each employee in a given company
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=WageComponentFixed_GetCurrent
+     *
+     * @param int $employeeId
+     *
+     * @return array
+     *
+     * @throws NmbrsException
+     */
+    public function getCurrentWageTaxByEmployee(int $employeeId): array
+    {
+        try {
+            $response = $this->employeeClient->WageTax_GetList(['EmployeeId' => $employeeId]);
+            var_dump($response);
+            return $this->wrapArray($response->WageTax_GetListResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get the Address for each employee in a given company
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=WageComponentVar_GetCurrent
      *
      * @param int $employeeId
@@ -190,14 +217,58 @@ trait EmployeeCallsTrait
         }
     }
 
+
+    /**
+     * Get the Address for each employee in a given company
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=WageComponentVar_GetCurrent
+     *
+     * @param int $employeeId
+     *
+     * @return array
+     *
+     * @throws NmbrsException
+     */
+    public function getCurrentSalariesByEmployee(int $employeeId, int $year, int $period): array
+    {
+        try {
+            $response = $this->employeeClient->Salary_GetList(['EmployeeId' => $employeeId, 'Year' => $year, 'Period' => $period]);
+            return $this->wrapArray($response->Salary_GetListResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get the Address for each employee in a given company
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=WageComponentVar_GetCurrent
+     *
+     * @param int $employeeId
+     *
+     * @return array
+     *
+     * @throws NmbrsException
+     */
+    public function getCurrentSalaryByEmployee(int $employeeId): array
+    {
+        try {
+            $response = $this->employeeClient->Salary_GetCurrent(['EmployeeId' => $employeeId]);
+            return $this->wrapArray($response->Salary_GetCurrentResult);
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
     /**
      * Get all absences (ziek, zwangerschap etc) for all employees in a given company
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence_GetAll_AllEmployeesByCompany
+     *
      * @param $company_id
+     *
      * @return array
+     *
      * @throws NmbrsException
      */
-    public function getAllAbsenceEmployeesByCompany($company_id)
+    public function getAllAbsenceEmployeesByCompany(int $company_id): array
     {
         try {
             $response = $this->employeeClient->Absence_GetAll_AllEmployeesByCompany(['CompanyId' => $company_id]);
@@ -214,7 +285,7 @@ trait EmployeeCallsTrait
      * @return array
      * @throws NmbrsException
      */
-    public function getAllPersonalInfoEmployeesByCompany($company_id)
+    public function getAllPersonalInfoEmployeesByCompany(int $company_id): array
     {
         try {
             $response = $this->employeeClient->PersonalInfo_GetAll_AllEmployeesByCompany(['CompanyID' => $company_id]);
@@ -226,7 +297,7 @@ trait EmployeeCallsTrait
 
     /**
      * Get salary for all employees in a given company
-     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=PersonalInfoContractSalaryAddress_GetAll_AllEmployeesByCompany
+     * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Salary_GetAll_AllEmployeesByCompany
      *
      * @param int $company_id
      *
@@ -238,11 +309,11 @@ trait EmployeeCallsTrait
         try {
             $response = $this->employeeClient->Salary_GetAll_AllEmployeesByCompany(['CompanyID' => $company_id]);
 
-            // if (property_exists($response->Salary_GetAll_AllEmployeesByCompanyResult, 'EmployeeSalaryItem')) {
+            // if (is_object($response->Salary_GetAll_AllEmployeesByCompanyResult ?? null) && is_array($response->Salary_GetAll_AllEmployeesByCompanyResult->EmployeeSalaryItem ?? null)) {
             //     return $response->Salary_GetAll_AllEmployeesByCompanyResult->EmployeeSalaryItem;
             // }
 
-            return $this->wrapArray($response->Salary_GetAll_AllEmployeesByCompanyResult);
+            return $this->wrapArray($response->Salary_GetAll_AllEmployeesByCompanyResult->EmployeeSalaryItem ?? null);
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
         }
@@ -251,11 +322,14 @@ trait EmployeeCallsTrait
     /**
      * Get personal info + salary + contract + adres for all employees in a given company
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=PersonalInfoContractSalaryAddress_GetAll_AllEmployeesByCompany
-     * @param $company_id
+     *
+     * @param int $company_id
+     *
      * @return array
+     *
      * @throws NmbrsException
      */
-    public function getAllPersonalInfoContractSalaryAddressEmployeesByCompany($company_id)
+    public function getAllPersonalInfoContractSalaryAddressEmployeesByCompany(int $company_id): array
     {
         try {
             $response = $this->employeeClient->PersonalInfoContractSalaryAddress_GetAll_AllEmployeesByCompany(['CompanyID' => $company_id]);
@@ -273,11 +347,14 @@ trait EmployeeCallsTrait
     /**
      * Get current active department by EmployeeID
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Department_GetCurrent
-     * @param $employee_id
+     *
+     * @param int $employee_id
+     *
      * @return array
+     *
      * @throws NmbrsException
      */
-    public function getCurrentDepartmentByEmployee($employee_id)
+    public function getCurrentDepartmentByEmployee(int $employee_id): array
     {
         try {
             $response = $this->employeeClient->Department_GetCurrent(['EmployeeId' => $employee_id]);
@@ -293,14 +370,15 @@ trait EmployeeCallsTrait
      *
      * @param int $employee_id
      *
-     * @return array
+     * @return object
+     *
      * @throws NmbrsException
      */
-    public function getCurrentPersonalInfoByEmployee(int $employee_id)
+    public function getCurrentPersonalInfoByEmployee(int $employee_id): object
     {
         try {
             $response = $this->employeeClient->PersonalInfo_GetCurrent(['EmployeeId' => $employee_id]);
-            return $this->wrapArray($response->PersonalInfo_GetCurrentResult);
+            return $response->PersonalInfo_GetCurrentResult;
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
         }
@@ -341,11 +419,14 @@ trait EmployeeCallsTrait
     /**
      * Get All contracts for a given Employee
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Contract_GetAll
+     *
      * @param $employee_id
+     *
      * @return array
+     *
      * @throws NmbrsException
      */
-    public function getAllContractsByEmployee($employee_id)
+    public function getAllContractsByEmployee(int $employee_id): array
     {
         try {
             $response = $this->employeeClient->Contract_GetAll(['EmployeeId' => $employee_id]);
@@ -358,11 +439,14 @@ trait EmployeeCallsTrait
     /**
      * Get All contracts for a given Employee
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=LeaveBalance_Get
-     * @param $employee_id
+     *
+     * @param int $employee_id
+     *
      * @return array
+     *
      * @throws NmbrsException
      */
-    public function getLeaveBalance($employee_id)
+    public function getLeaveBalance(int $employee_id): array
     {
         try {
             $response = $this->employeeClient->LeaveBalance_Get(['EmployeeId' => $employee_id]);
@@ -376,11 +460,14 @@ trait EmployeeCallsTrait
      * Get current labour agreement settings for current period by EmployeeID
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=LabourAgreements_GetCurrent
      * @todo determine if this is the correct method. (could also be LabourAgreements_Get.)
-     * @param $employee_id
+     *
+     * @param int $employee_id
+     *
      * @return array
+     *
      * @throws NmbrsException
      */
-    public function getCurrentLabourAgreementsByEmployee($employee_id)
+    public function getCurrentLabourAgreementsByEmployee(int $employee_id): array
     {
         try {
             $response = $this->employeeClient->LabourAgreements_GetCurrent(['EmployeeId' => $employee_id]);
@@ -393,11 +480,14 @@ trait EmployeeCallsTrait
     /**
      * Get all labour agreement settings for current period by EmployeeID
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=LabourAgreements_Get
-     * @param $employee_id
+     *
+     * @param int $employee_id
+     *
      * @return array
+     *
      * @throws NmbrsException
      */
-    public function getAllLabourAgreementsByEmployee($employee_id)
+    public function getAllLabourAgreementsByEmployee(int $employee_id): array
     {
         try {
             $response = $this->employeeClient->LabourAgreements_Get(['EmployeeId' => $employee_id]);
@@ -410,10 +500,12 @@ trait EmployeeCallsTrait
     /**
      * Get all employee types
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=EmployeeType_GetList
+     *
      * @return array
+     *
      * @throws NmbrsException
      */
-    public function getListOfEmployeeTypes()
+    public function getListOfEmployeeTypes(): array
     {
         try {
             $response = $this->employeeClient->EmployeeType_GetList();
@@ -427,11 +519,14 @@ trait EmployeeCallsTrait
      * NL-only. Insert a absence with cause, this item will start from the given date in the object.
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence2_Insert
      * @todo determine if this is the correct method. (could also be Absence_insert.)
-     * @param $employee_id
+     *
+     * @param object $medicalFile
+     *
      * @return array
+     *
      * @throws NmbrsException
      */
-    public function setAbsenceByNewMedicalFile($medicalFile)
+    public function setAbsenceByNewMedicalFile(object $medicalFile): array
     {
 
         $input = [
@@ -444,11 +539,11 @@ trait EmployeeCallsTrait
                 'Dossier' => $medicalFile->payrollVerzuimType,
                 'Dossiernr' => $medicalFile->id,
                 // 'Dossiernr' => 7654321,
-                'End' => isset($medicalFile->closed_at) ? displayDateTimeXsd($medicalFile->closed_at) :  null,
+                'End' => isset($medicalFile->closed_at) ? $this->displayDateTimeXsd($medicalFile->closed_at) :  null,
                 'Percentage' => $medicalFile->sick_percentage ?? '',
-                'RegistrationEndDate' => isset($medicalFile->closed_at) ? displayDateTimeXsd($medicalFile->closed_at) :  null,
-                'RegistrationStartDate' => displayDateTimeXsd($medicalFile->started_at), // '2022-06-21T10:20:44.000000Z',
-                'Start' => displayDateTimeXsd($medicalFile->started_at), // '2022-06-21T10:20:44.000000Z',
+                'RegistrationEndDate' => isset($medicalFile->closed_at) ? $this->displayDateTimeXsd($medicalFile->closed_at) :  null,
+                'RegistrationStartDate' => $this->displayDateTimeXsd($medicalFile->started_at), // '2022-06-21T10:20:44.000000Z',
+                'Start' => $this->displayDateTimeXsd($medicalFile->started_at), // '2022-06-21T10:20:44.000000Z',
             ],
         ];
 
@@ -481,18 +576,21 @@ trait EmployeeCallsTrait
      * NL-only. Insert a absence with cause, this item will start from the given date in the object.
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence2_Insert
      * @todo determine if this is the correct method. (could also be Absence_insert.)
-     * @param $employee_id
+     *
+     * @param object $medicalFile
+     *
      * @return array
+     *
      * @throws NmbrsException
      */
-    public function setAbsenceByReopenedMedicalFile($medicalFile)
+    public function setAbsenceByReopenedMedicalFile(object $medicalFile): array
     {
         /**
          * info: NMBRS doesnt work with composed medicalFiles.
          * action: create a new one every time a medicalFiles reopens.
          */
         $dossiernr = $medicalFile->id . '00' . $medicalFile->getVerzuimFrequency();
-        $reopened_at = $medicalFile->tasks()->where('type', 'open_medicalFile')->latest()->first()->start_date ?? now();
+        $reopened_at = $medicalFile->tasks()->where('type', 'open_medicalFile')->latest()->first()->start_date ?? $this->now();
 
         $input = [
             'EmployeeId' => $medicalFile->employee->payroll_id,
@@ -505,11 +603,11 @@ trait EmployeeCallsTrait
                 'Dossier' => $medicalFile->payrollVerzuimType,
                 'Dossiernr' => (int) $dossiernr,
                 // 'Dossiernr' => 7654321,
-                'End' => isset($medicalFile->closed_at) ? displayDateTimeXsd($medicalFile->closed_at) :  null,
+                'End' => isset($medicalFile->closed_at) ? $this->displayDateTimeXsd($medicalFile->closed_at) :  null,
                 'Percentage' => $medicalFile->sick_percentage ?? '',
-                'RegistrationEndDate' => isset($medicalFile->closed_at) ? displayDateTimeXsd($medicalFile->closed_at) :  null,
-                'RegistrationStartDate' => displayDateTimeXsd($reopened_at), // '2022-06-21T10:20:44.000000Z',
-                'Start' => displayDateTimeXsd($reopened_at), // '2022-06-21T10:20:44.000000Z',
+                'RegistrationEndDate' => isset($medicalFile->closed_at) ? $this->displayDateTimeXsd($medicalFile->closed_at) :  null,
+                'RegistrationStartDate' => $this->displayDateTimeXsd($reopened_at), // '2022-06-21T10:20:44.000000Z',
+                'Start' => $this->displayDateTimeXsd($reopened_at), // '2022-06-21T10:20:44.000000Z',
             ],
         ];
 
@@ -542,18 +640,21 @@ trait EmployeeCallsTrait
      * NL-only. Insert a absence recovery message.
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence_RecoveryInsert
      * @todo determine if this is the correct method. (could also be Absence_insert.)
-     * @param $employee_id
+     *
+     * @param object $medicalFile
+     *
      * @return array
+     *
      * @throws NmbrsException
      */
-    public function recoverAbsenceByMedicalFile($medicalFile)
+    public function recoverAbsenceByMedicalFile(object $medicalFile): array
     {
         $input = [
             'AbsenceID' => $medicalFile->payroll_id,
             'Comment' => $medicalFile->tasks()->where('name', 'Betermelding')->latest()->first()->description ?? null,
             'EmployeeId' => $medicalFile->employee->payroll_id,
-            'Lastdayabsence' => displayDateTimeXsd($medicalFile->closed_at),
-            'Reportdate' => displayDateTimeXsd($medicalFile->closed_at),
+            'Lastdayabsence' => $this->displayDateTimeXsd($medicalFile->closed_at),
+            'Reportdate' => $this->displayDateTimeXsd($medicalFile->closed_at),
         ];
 
         try {
@@ -581,19 +682,22 @@ trait EmployeeCallsTrait
      * NL-only. Insert a absence partial recovery message.
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Absence2_Insert
      * @todo determine if this is the correct method. (could also be Absence_insert.)
-     * @param $employee_id
+     *
+     * @param object $medicalFile
+     *
      * @return array
+     *
      * @throws NmbrsException
      */
-    public function partialRecoverAbsenceByMedicalFile($medicalFile)
+    public function partialRecoverAbsenceByMedicalFile(object $medicalFile): array
     {
         $input = [
             'AbsenceID' => $medicalFile->payroll_id,
             'Comment' => null,
             'EmployeeId' => $medicalFile->employee->payroll_id,
             'Percent' => $medicalFile->sick_percentage,
-            'Reportdate' => displayDateTimeXsd($medicalFile->latest_course_absence_percentage['start']),
-            'StartDate' => displayDateTimeXsd($medicalFile->latest_course_absence_percentage['start']),
+            'Reportdate' => $this->displayDateTimeXsd($medicalFile->latest_course_absence_percentage['start']),
+            'StartDate' => $this->displayDateTimeXsd($medicalFile->latest_course_absence_percentage['start']),
         ];
 
         try {
@@ -623,8 +727,11 @@ trait EmployeeCallsTrait
     /**
      * Contract_GetAll_AllEmployeesByCompany
      *
+     * @param int $company_id
+     *
+     * @return object
      */
-    public function getAllContractsByCompany($company_id)
+    public function getAllContractsByCompany(int $company_id): object
     {
         try {
             $result = $this->employeeClient->Contract_GetAll_AllEmployeesByCompany(['CompanyID' => $company_id]);
@@ -638,15 +745,15 @@ trait EmployeeCallsTrait
      * Employment_GetAll_AllEmployeesByCompany
      * https://api.nmbrs.nl/soap/v3/EmployeeService.asmx?op=Employment_GetAll_AllEmployeesByCompany
      *
-     * @param string $company_id
+     * @param int $company_id
      *
-     * @return
+     * @return object[]
      */
-    public function getAllEmploymentsByCompany(string $company_id): object
+    public function getAllEmploymentsByCompany(int $company_id): array
     {
         try {
             $result = $this->employeeClient->Employment_GetAll_AllEmployeesByCompany(['CompanyID' => $company_id]);
-            return $result->Employment_GetAll_AllEmployeesByCompanyResult;
+            return $this->wrapArray($result->Employment_GetAll_AllEmployeesByCompanyResult->EmployeeEmploymentItem ?? null);
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
         }
@@ -656,10 +763,10 @@ trait EmployeeCallsTrait
      * Get employments for one employee
      * @info: uses same call as getAllEmploymentsByCompany, but added some code to get employee specific
      */
-    public function getAllEmploymentsByCompanyAndEmployee($company_id, $employee_id)
+    public function getAllEmploymentsByCompanyAndEmployee(int $company_id, int $employee_id): object
     {
         try {
-            $employments = $this->getAllEmploymentsByCompany($company_id)->EmployeeEmploymentItem;
+            $employments = $this->getAllEmploymentsByCompany($company_id);
 
             foreach ($employments as $employment) {
                 if ($employee_id == $employment->EmployeeId) {
@@ -678,21 +785,7 @@ trait EmployeeCallsTrait
     public function getlatestEmploymentByCompanyAndEmployee($company_id, $employee_id)
     {
         try {
-            $employments = $this->getAllEmploymentsByCompany($company_id)->EmployeeEmploymentItem;
-
-            # if only one employment
-            if (isset($employments->EmployeeId)) {
-                if ($employee_id == $employments->EmployeeId) {
-
-                    if (is_array($employments->EmployeeEmployments->Employment)) {
-                        $data = [];
-                        $data['Employment'] = $employments->EmployeeEmployments->Employment[0];
-                        return $data;
-                    }
-
-                    return $employments->EmployeeEmployments;
-                }
-            }
+            $employments = $this->getAllEmploymentsByCompany($company_id);
 
             # multiple employments
             foreach ($employments as $employment) {
@@ -737,7 +830,7 @@ trait EmployeeCallsTrait
             $result = $this->employeeClient->WageTax_Get([
                 'EmployeeId' => $employee_id,
                 'Period' => 1,
-                'Year' => now()->format('Y'),
+                'Year' => $this->now()->format('Y'),
             ]);
 
             return $this->wrapArray($result->WageTax_GetResult);
@@ -749,15 +842,38 @@ trait EmployeeCallsTrait
     /**
      * Get current function by employee
      *
+     * @param int $employee_id
+     *
+     * @param object
      */
-    public function getCurrentFunctionByEmployee($employee_id)
+    public function getCurrentFunctionByEmployee(int $employee_id): object
     {
         try {
             $result = $this->employeeClient->Function_GetCurrent(['EmployeeId' => $employee_id]);
 
-            return $this->wrapArray($result->Function_GetCurrentResult);
+            return $result->Function_GetCurrentResult;
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
         }
+    }
+
+    private function displayDateTimeXsd(string $date): ?string
+    {
+        if (function_exists('displayDateTimeXsd')) {
+            return displayDateTimeXsd($date);
+        }
+        $dateTimeObject = \DateTime::createFromFormat('Y-m-d|', $date);
+        if (false !== $dateTimeObject) {
+            return $dateTimeObject->format(\DateTime::ATOM);
+        }
+        return null;
+    }
+
+    private function now(): \DateTime
+    {
+        if (function_exists('now')) {
+            return now();
+        }
+        return new \DateTime();
     }
 }

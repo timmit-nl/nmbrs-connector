@@ -37,6 +37,14 @@ class NmbrsClient
     use EmployeeCallsTrait;
     use ReportCallsTrait;
 
+    /**
+     * __construct
+     *
+     * @param string $username
+     * @param string $password
+     * @param string $domain
+     * @param bool $sandbox
+     */
     public function __construct(string $username, string $password, string $domain, bool $sandbox = false)
     {
         $this->sandbox = $sandbox;
@@ -47,6 +55,11 @@ class NmbrsClient
         $this->reportClient = $this->getClientForService(self::REPORT_SERVICE, $username, $password, $domain);
     }
 
+    /**
+     * getBaseUrl
+     *
+     * @return string
+     */
     protected function getBaseUrl(): string
     {
         if ($this->sandbox) {
@@ -57,6 +70,16 @@ class NmbrsClient
         return $url;
     }
 
+    /**
+     * getClientForService
+     *
+     * @param string $service
+     * @param string $username
+     * @param string $password
+     * @param string $domain
+     *
+     * @return SoapClient
+     */
     protected function getClientForService(string $service, string $username, string $password, string $domain): SoapClient
     {
         $ns = $this->getBaseUrl() . $service;
@@ -73,6 +96,13 @@ class NmbrsClient
         return $client;
     }
 
+    /**
+     * wrapArray
+     *
+     * @param mixed $data
+     *
+     * @return array
+     */
     private function wrapArray(mixed $data): array
     {
         if ($data == null) {
