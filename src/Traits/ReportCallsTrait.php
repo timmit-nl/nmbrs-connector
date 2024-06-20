@@ -13,15 +13,35 @@ trait ReportCallsTrait
      * getWageCodesByRunCompany
      * https://api.nmbrs.nl/soap/v3/ReportService.asmx?op=Reports_GetWageCodesByRunCompany_FilterByWageCode_Background
      *
-     * @return mixed
+     * @return null|string
+     *
      * @throws NmbrsException
      */
-    public function getWageCodesByRunCompany(int $company_id, int $run_id, int $year, int $wageCode): ?string
+    public function getWageCodesByRunCompanyFilterByWageCode(int $company_id, int $run_id, int $year, int $wageCode): ?string
     {
         try {
             $response = $this->reportClient->Reports_GetWageCodesByRunCompany_FilterByWageCode_Background(['companyId' => $company_id, 'runId' => $run_id, 'year' => $year, 'wageCode' => $wageCode]);
 
             return $response->Reports_GetWageCodesByRunCompany_FilterByWageCode_BackgroundResult ?? null;
+        } catch (\Exception $e) {
+            throw new NmbrsException($e->getMessage());
+        }
+    }
+
+    /**
+     * getWageCodesByRunCompany
+     * https://api.nmbrs.nl/soap/v3/ReportService.asmx?op=Reports_GetWageCodesByRunCompany_Background
+     *
+     * @return string
+     *
+     * @throws NmbrsException
+     */
+    public function getWageCodesByRunCompany(int $company_id, int $run_id, int $year): ?string
+    {
+        try {
+            $response = $this->reportClient->Reports_GetWageCodesByRunCompany_v2_Background(['companyId' => $company_id, 'runId' => $run_id, 'year' => $year]);
+
+            return $response->Reports_GetWageCodesByRunCompany_v2_BackgroundResult ?? null;
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
         }
