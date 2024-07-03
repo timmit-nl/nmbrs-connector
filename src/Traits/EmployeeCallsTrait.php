@@ -190,7 +190,6 @@ trait EmployeeCallsTrait
     {
         try {
             $response = $this->employeeClient->WageTax_GetList(['EmployeeId' => $employeeId]);
-            var_dump($response);
             return $this->wrapArray($response->WageTax_GetListResult);
         } catch (\Exception $e) {
             throw new NmbrsException($e->getMessage());
