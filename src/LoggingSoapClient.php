@@ -33,9 +33,9 @@ class LoggingSoapClient extends SoapClient
      * @param int $version
      * @param bool $oneWay
      *
-     * @return string
+     * @return string|null null when the request fails; SoapClient then raises a SoapFault
      */
-    public function __doRequest(string $request, string $location, string $action, int $version, bool $oneWay = false): string
+    public function __doRequest(string $request, string $location, string $action, int $version, bool $oneWay = false): ?string
     {
         ($this->logger)('request', $this->serviceName, $action, $this->formatXml($request));
 
