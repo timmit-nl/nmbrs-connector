@@ -71,26 +71,39 @@ trait ReportCallsTrait
      * Wait for the result of an Nmbrs background task using exponential backoff.
      * Polls with sleep sequence 3, 5, 8, 13, 20, 30, 30, ... seconds (capped at 30s per iteration)
      * and stops as soon as the next sleep would exceed maxSeconds.
+     * Transient errors while polling are retried until maxConsecutiveErrors is reached;
+     * unauthorized errors are thrown immediately.
      *
      * @param string $taskId
      * @param int $maxSeconds Total maximum wait time in seconds (default 60)
+     * @param int $maxConsecutiveErrors Maximum number of consecutive failed polls before giving up (default 3)
      *
      * @return \stdClass The full result object with Status='Success'
      *
-     * @throws NmbrsException On status Failed/Error/Unknown or timeout
+     * @throws NmbrsException On status Failed/Error/Unknown, timeout, unauthorized or too many consecutive errors
      */
-    public function waitForBackgroundTaskResult(string $taskId, int $maxSeconds = 60): object
+    public function waitForBackgroundTaskResult(string $taskId, int $maxSeconds = 60, int $maxConsecutiveErrors = 3): object
     {
         $sleepSequence = [3, 5, 8, 13, 20, 30];
         $sleepCap = 30;
         $start = time();
         $iteration = 0;
         $lastStatus = '';
+        $consecutiveErrors = 0;
 
         while (true) {
-            $result = $this->backgroundTask($taskId);
-
-            $lastStatus = strtolower((string)($result?->Status ?? ''));
+            try {
+                $result = $this->backgroundTask($taskId);
+                $consecutiveErrors = 0;
+                $lastStatus = strtolower((string)($result?->Status ?? ''));
+            } catch (NmbrsException $e) {
+                $consecutiveErrors++;
+                if ($e->isUnauthorizedError() || $consecutiveErrors >= $maxConsecutiveErrors) {
+                    throw $e;
+                }
+                $result = null;
+                $lastStatus = 'error while polling: ' . $e->getMessage();
+            }
 
             if ('success' === $lastStatus) {
                 return $result;
