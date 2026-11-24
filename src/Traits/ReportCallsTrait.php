@@ -68,20 +68,21 @@ trait ReportCallsTrait
     }
 
     /**
-     * Wacht op het resultaat van een Nmbrs background-task met exponential backoff.
-     * Polled met sleep-reeks 3, 5, 8, 13, 20, 30, 30, ... seconden (capped op 30s per iteratie)
-     * en stopt zodra de volgende sleep de maxSeconds zou overschrijden.
+     * Wait for the result of an Nmbrs background task using exponential backoff.
+     * Polls with sleep sequence 3, 5, 8, 13, 20, 30, 30, ... seconds (capped at 30s per iteration)
+     * and stops as soon as the next sleep would exceed maxSeconds.
      *
      * @param string $taskId
-     * @param int $maxSeconds Totale max wachttijd in seconden (default 60)
+     * @param int $maxSeconds Total maximum wait time in seconds (default 60)
      *
-     * @return \stdClass Het volledige result object met Status='Success'
+     * @return \stdClass The full result object with Status='Success'
      *
-     * @throws NmbrsException Bij status Failed/Error/Unknown of timeout
+     * @throws NmbrsException On status Failed/Error/Unknown or timeout
      */
-    public function waitForBackgroundTaskResult(string $taskId, int $maxSeconds = 60): \stdClass
+    public function waitForBackgroundTaskResult(string $taskId, int $maxSeconds = 60): object
     {
         $sleepSequence = [3, 5, 8, 13, 20, 30];
+        $sleepCap = 30;
         $start = time();
         $iteration = 0;
         $lastStatus = '';
@@ -102,7 +103,7 @@ trait ReportCallsTrait
             }
 
             $elapsed = time() - $start;
-            $sleep = $sleepSequence[$iteration] ?? $maxSeconds;
+            $sleep = min($sleepSequence[$iteration] ?? $sleepCap, $sleepCap);
 
             if (($elapsed + $sleep) > $maxSeconds) {
                 $remaining = $maxSeconds - $elapsed;
